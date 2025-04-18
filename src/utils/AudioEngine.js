@@ -7,7 +7,7 @@ export default class AudioEngine {
 
     loadSound(id, audio) {
         this.sounds[id] = audio;
-        audio.volume = this.volume; // Set initial volume
+        audio.volume = this.volume;
     }
 
     play(id, loop = false) {

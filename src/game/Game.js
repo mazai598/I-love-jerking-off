@@ -30,8 +30,9 @@ export default class Game {
         this.powerupInterval = 5000;
         this.bossTimer = 0;
         this.bossInterval = 30000;
-        this.backgroundY = 0; // For scrolling background
+        this.backgroundY = 0;
         this.backgroundSpeed = 1;
+        this.lastFrameTime = performance.now();
     }
 
     start() {
@@ -40,21 +41,29 @@ export default class Game {
 
     animate() {
         if (!this.paused && !this.gameOver) {
+            const currentTime = performance.now();
+            const deltaTime = currentTime - this.lastFrameTime;
+            this.lastFrameTime = currentTime;
+
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            // Draw scrolling background
-            this.backgroundY += this.backgroundSpeed;
+            this.backgroundY += this.backgroundSpeed * (deltaTime / 16.67);
             if (this.backgroundY >= this.canvas.height) this.backgroundY = 0;
             this.ctx.drawImage(this.assets.background, 0, this.backgroundY, this.canvas.width, this.canvas.height);
             this.ctx.drawImage(this.assets.background, 0, this.backgroundY - this.canvas.height, this.canvas.width, this.canvas.height);
+
             this.player.update();
             this.player.draw();
-            this.spawnEnemies();
-            this.spawnPowerups();
-            this.spawnBoss();
+            this.spawnEnemies(deltaTime);
+            this.spawnPowerups(deltaTime);
+            this.spawnBoss(deltaTime);
             this.enemies = this.enemies.filter(enemy => !enemy.markedForDeletion);
-            this.enemies.forEach(enemy => enemy.update());
+            for (let i = 0; i < this.enemies.length; i++) {
+                this.enemies[i].update();
+            }
             this.powerups = this.powerups.filter(powerup => !powerup.markedForDeletion);
-            this.powerups.forEach(powerup => powerup.update());
+            for (let i = 0; i < this.powerups.length; i++) {
+                this.powerups[i].update();
+            }
             this.weaponSystem.update();
             this.particleSystem.update();
             this.particleSystem.draw();
@@ -63,8 +72,8 @@ export default class Game {
         }
     }
 
-    spawnEnemies() {
-        this.spawnTimer += 16.67;
+    spawnEnemies(deltaTime) {
+        this.spawnTimer += deltaTime;
         if (this.spawnTimer > this.spawnInterval) {
             const enemyTypes = [Enemy, StealthEnemy];
             const EnemyType = enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
@@ -74,8 +83,8 @@ export default class Game {
         }
     }
 
-    spawnPowerups() {
-        this.powerupTimer += 16.67;
+    spawnPowerups(deltaTime) {
+        this.powerupTimer += deltaTime;
         if (this.powerupTimer > this.powerupInterval) {
             const types = ['energy', 'laser', 'life', 'penta', 'wave'];
             const type = types[Math.floor(Math.random() * types.length)];
@@ -84,8 +93,8 @@ export default class Game {
         }
     }
 
-    spawnBoss() {
-        this.bossTimer += 16.67;
+    spawnBoss(deltaTime) {
+        this.bossTimer += deltaTime;
         if (this.bossTimer > this.bossInterval) {
             this.enemies.push(new BossEnemy(this));
             this.audioEngine.play('boss_warning');
@@ -104,7 +113,6 @@ export default class Game {
         this.paused = !this.paused;
         document.getElementById('pause-menu').style.display = this.paused ? 'flex' : 'none';
         if (this.paused) {
-            // Save progress when pausing
             this.saveProgress();
         }
     }
@@ -112,7 +120,7 @@ export default class Game {
     endGame() {
         this.gameOver = true;
         document.getElementById('game-over').style.display = 'flex';
-        localStorage.removeItem('gameProgress'); // Clear progress on game over
+        localStorage.removeItem('gameProgress');
     }
 
     saveProgress() {

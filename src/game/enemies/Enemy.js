@@ -5,18 +5,21 @@ export default class Enemy {
         this.height = 32;
         this.x = Math.random() * (game.canvas.width - this.width);
         this.y = -this.height;
-        this.speed = 2;
+        this.speed = 1;
         this.markedForDeletion = false;
-        this.image = this.game.assets.enemySmall;
+        this.image = game.assets.enemy_small;
     }
 
     update() {
         this.y += this.speed;
         if (this.y > this.game.canvas.height) this.markedForDeletion = true;
         if (this.collidesWith(this.game.player)) {
-            this.game.player.hit();
             this.markedForDeletion = true;
+            this.game.player.hit();
         }
+    }
+
+    draw() {
         this.game.ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
     }
 
@@ -27,19 +30,5 @@ export default class Enemy {
             this.y < player.y + player.height &&
             this.y + this.height > player.y
         );
-    }
-
-    hit() {
-        this.markedForDeletion = true;
-        this.game.audioEngine.play('explosion');
-        for (let i = 0; i < 5; i++) {
-            this.game.particleSystem.addParticle(
-                this.x + this.width / 2,
-                this.y + this.height / 2,
-                (Math.random() - 0.5) * 3,
-                (Math.random() - 0.5) * 3,
-                'glow'
-            );
-        }
     }
 }

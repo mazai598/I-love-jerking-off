@@ -104,6 +104,19 @@ function loadAssets() {
         loadAudio('./assets/sounds/shoot.mp3').then(audio => assets.shoot = audio),
         loadAudio('./assets/sounds/wave.mp3').then(audio => assets.wave = audio)
     ];
+
+    // Update loading progress
+    const totalAssets = promises.length;
+    let loadedAssets = 0;
+    const progressElement = document.getElementById('loading-progress');
+    promises.forEach(promise => {
+        promise.then(() => {
+            loadedAssets++;
+            const percentage = Math.round((loadedAssets / totalAssets) * 100);
+            progressElement.textContent = `${percentage}%`;
+        });
+    });
+
     return Promise.all(promises).then(() => assets);
 }
 
