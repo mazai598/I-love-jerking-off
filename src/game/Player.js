@@ -9,7 +9,7 @@ export default class Player {
         this.frame = 0;
         this.frameTimer = 0;
         this.frameInterval = 100;
-        this.image = game.assets.playerSheet;
+        this.image = game.assets.player_sheet;
         this.thrusterImage = game.assets.thruster;
         this.lives = 3;
         this.energy = 100;

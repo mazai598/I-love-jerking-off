@@ -15,6 +15,13 @@ function init() {
     const savedLang = localStorage.getItem('language') || 'zh';
     updateLanguage(savedLang);
     document.getElementById('language').value = savedLang;
+
+    // Check for saved game progress
+    const savedProgress = localStorage.getItem('gameProgress');
+    if (savedProgress) {
+        document.getElementById('continue-game').disabled = false;
+    }
+
     loadAssets().then(assets => {
         // Preload audio into audioEngine
         Object.keys(assets).forEach(key => {
@@ -32,42 +39,63 @@ function init() {
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('./sw.js');
     }
+
+    // Handle PWA installation prompt
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        document.getElementById('install').style.display = 'block';
+    });
+
+    document.getElementById('install').addEventListener('click', () => {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then((choiceResult) => {
+                if (choiceResult.outcome === 'accepted') {
+                    console.log('User accepted the install prompt');
+                }
+                deferredPrompt = null;
+            });
+        }
+    });
 }
 
 function loadAssets() {
     const assets = {};
     const promises = [
-        // Images
+        // Images (match exact filenames)
         loadImage('./assets/images/background.png').then(img => assets.background = img),
-        loadImage('./assets/images/boss_final.png').then(img => assets.bossFinal = img),
-        loadImage('./assets/images/boss_mid.png').then(img => assets.bossMid = img),
-        loadImage('./assets/images/boss_mini.png').then(img => assets.bossMini = img),
-        loadImage('./assets/images/boss_missile.png').then(img => assets.bossMissile = img),
+        loadImage('./assets/images/boss_final.png').then(img => assets.boss_final = img),
+        loadImage('./assets/images/boss_mid.png').then(img => assets.boss_mid = img),
+        loadImage('./assets/images/boss_mini.png').then(img => assets.boss_mini = img),
+        loadImage('./assets/images/boss_missile.png').then(img => assets.boss_missile = img),
         loadImage('./assets/images/bullet.png').then(img => assets.bullet = img),
-        loadImage('./assets/images/bullet_laser.png').then(img => assets.bulletLaser = img),
-        loadImage('./assets/images/bullet_penta.png').then(img => assets.bulletPenta = img),
-        loadImage('./assets/images/bullet_wave.png').then(img => assets.bulletWave = img),
-        loadImage('./assets/images/enemy_bullet.png').then(img => assets.enemyBullet = img),
-        loadImage('./assets/images/enemy_large.png').then(img => assets.enemyLarge = img),
-        loadImage('./assets/images/enemy_medium.png').then(img => assets.enemyMedium = img),
-        loadImage('./assets/images/enemy_small.png').then(img => assets.enemySmall = img),
-        loadImage('./assets/images/enemy_stealth.png').then(img => assets.enemyStealth = img),
+        loadImage('./assets/images/bullet_laser.png').then(img => assets.bullet_laser = img),
+        loadImage('./assets/images/bullet_penta.png').then(img => assets.bullet_penta = img),
+        loadImage('./assets/images/bullet_wave.png').then(img => assets.bullet_wave = img),
+        loadImage('./assets/images/enemy_bullet.png').then(img => assets.enemy_bullet = img),
+        loadImage('./assets/images/enemy_large.png').then(img => assets.enemy_large = img),
+        loadImage('./assets/images/enemy_medium.png').then(img => assets.enemy_medium = img),
+        loadImage('./assets/images/enemy_small.png').then(img => assets.enemy_small = img),
+        loadImage('./assets/images/enemy_stealth.png').then(img => assets.enemy_stealth = img),
         loadImage('./assets/images/explosion.png').then(img => assets.explosion = img),
         loadImage('./assets/images/glow.png').then(img => assets.glow = img),
         loadImage('./assets/images/laser.png').then(img => assets.laser = img),
-        loadImage('./assets/images/muzzle_flash.png').then(img => assets.muzzleFlash = img),
-        loadImage('./assets/images/particle_trail.png').then(img => assets.particleTrail = img),
-        loadImage('./assets/images/player_sheet.png').then(img => assets.playerSheet = img),
-        loadImage('./assets/images/powerup_energy.png').then(img => assets.powerupEnergy = img),
-        loadImage('./assets/images/powerup_laser.png').then(img => assets.powerupLaser = img),
-        loadImage('./assets/images/powerup_life.png').then(img => assets.powerupLife = img),
-        loadImage('./assets/images/powerup_penta.png').then(img => assets.powerupPenta = img),
-        loadImage('./assets/images/powerup_wave.png').then(img => assets.powerupWave = img),
+        loadImage('./assets/images/loading_bg.png').then(img => assets.loading_bg = img),
+        loadImage('./assets/images/muzzle_flash.png').then(img => assets.muzzle_flash = img),
+        loadImage('./assets/images/particle_trail.png').then(img => assets.particle_trail = img),
+        loadImage('./assets/images/player_sheet.png').then(img => assets.player_sheet = img),
+        loadImage('./assets/images/powerup_energy.png').then(img => assets.powerup_energy = img),
+        loadImage('./assets/images/powerup_laser.png').then(img => assets.powerup_laser = img),
+        loadImage('./assets/images/powerup_life.png').then(img => assets.powerup_life = img),
+        loadImage('./assets/images/powerup_penta.png').then(img => assets.powerup_penta = img),
+        loadImage('./assets/images/powerup_wave.png').then(img => assets.powerup_wave = img),
         loadImage('./assets/images/thruster.png').then(img => assets.thruster = img),
-        loadImage('./assets/images/weapon_normal.png').then(img => assets.weaponNormal = img),
+        loadImage('./assets/images/weapon_normal.png').then(img => assets.weapon_normal = img),
         // Sounds
         loadAudio('./assets/sounds/bgm.mp3').then(audio => assets.bgm = audio),
-        loadAudio('./assets/sounds/boss_warning.mp3').then(audio => assets.bossWarning = audio),
+        loadAudio('./assets/sounds/boss_warning.mp3').then(audio => assets.boss_warning = audio),
         loadAudio('./assets/sounds/click.mp3').then(audio => assets.click = audio),
         loadAudio('./assets/sounds/explosion.mp3').then(audio => assets.explosion = audio),
         loadAudio('./assets/sounds/laser.mp3').then(audio => assets.laser = audio),
@@ -99,6 +127,7 @@ function loadAudio(src) {
 
 function setupEventListeners() {
     document.getElementById('start-game').addEventListener('click', startGame);
+    document.getElementById('continue-game').addEventListener('click', continueGame);
     document.getElementById('settings').addEventListener('click', () => {
         document.querySelector('.settings-menu').style.display = 'block';
         audioEngine.play('click');
@@ -131,6 +160,10 @@ function setupEventListeners() {
         document.getElementById('about-modal').style.display = 'flex';
         audioEngine.play('click');
     });
+    document.getElementById('exit').addEventListener('click', () => {
+        window.close(); // Attempt to close the window
+        audioEngine.play('click');
+    });
     document.querySelectorAll('.modal-close').forEach(btn => {
         btn.addEventListener('click', () => {
             btn.closest('.modal').style.display = 'none';
@@ -149,6 +182,20 @@ function startGame() {
     game.start();
     audioEngine.play('bgm', true);
     audioEngine.play('click');
+}
+
+function continueGame() {
+    const savedProgress = localStorage.getItem('gameProgress');
+    if (savedProgress) {
+        menuContainer.style.display = 'none';
+        canvas.style.display = 'block';
+        virtualControls.style.display = 'flex';
+        game = new Game(canvas, game.assets, audioEngine);
+        game.loadProgress(JSON.parse(savedProgress));
+        game.start();
+        audioEngine.play('bgm', true);
+        audioEngine.play('click');
+    }
 }
 
 function returnToMenu() {

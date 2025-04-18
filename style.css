@@ -51,6 +51,7 @@ button {
     cursor: pointer;
     transition: all 0.2s;
     font-family: 'PixelFont', Arial, sans-serif;
+    font-size: 18px;
 }
 
 button:hover {
@@ -60,6 +61,11 @@ button:hover {
 
 button:active {
     transform: scale(0.95);
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 .virtual-controls {

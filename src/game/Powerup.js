@@ -8,7 +8,7 @@ export default class Powerup {
         this.y = -this.height;
         this.speed = 1;
         this.markedForDeletion = false;
-        this.image = game.assets[`powerup${this.type.charAt(0).toUpperCase() + this.type.slice(1)}`];
+        this.image = game.assets[`powerup_${this.type}`];
     }
 
     update() {
@@ -34,10 +34,7 @@ export default class Powerup {
     }
 
     applyEffect() {
-        // Ensure sound plays when power-up is collected
         this.game.audioEngine.play('powerup');
-        
-        // Add particle effect for visual feedback
         for (let i = 0; i < 5; i++) {
             this.game.particleSystem.addParticle(
                 this.x + this.width / 2,
@@ -55,8 +52,16 @@ export default class Powerup {
             case 'energy':
                 this.game.player.addEnergy(20);
                 break;
-            default:
-                this.game.weaponSystem.setWeapon(this.type);
+            case 'laser':
+                this.game.weaponSystem.setWeapon('laser');
+                this.game.player.addEnergy(10); // Bonus energy for laser
+                break;
+            case 'penta':
+                this.game.weaponSystem.setWeapon('penta');
+                break;
+            case 'wave':
+                this.game.weaponSystem.setWeapon('wave');
+                break;
         }
     }
 }

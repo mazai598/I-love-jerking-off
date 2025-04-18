@@ -30,26 +30,22 @@ export default class Game {
         this.powerupInterval = 5000;
         this.bossTimer = 0;
         this.bossInterval = 30000;
-
-        // Initialize dynamic background video
-        this.backgroundVideo = document.createElement('video');
-        this.backgroundVideo.src = './assets/videos/menu_starfield.mp4';
-        this.backgroundVideo.muted = true;
-        this.backgroundVideo.loop = true;
-        this.backgroundVideo.autoplay = true;
-        this.backgroundVideo.playsInline = true;
+        this.backgroundY = 0; // For scrolling background
+        this.backgroundSpeed = 1;
     }
 
     start() {
-        this.backgroundVideo.play();
         this.animate();
     }
 
     animate() {
         if (!this.paused && !this.gameOver) {
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            // Draw dynamic video background
-            this.ctx.drawImage(this.backgroundVideo, 0, 0, this.canvas.width, this.canvas.height);
+            // Draw scrolling background
+            this.backgroundY += this.backgroundSpeed;
+            if (this.backgroundY >= this.canvas.height) this.backgroundY = 0;
+            this.ctx.drawImage(this.assets.background, 0, this.backgroundY, this.canvas.width, this.canvas.height);
+            this.ctx.drawImage(this.assets.background, 0, this.backgroundY - this.canvas.height, this.canvas.width, this.canvas.height);
             this.player.update();
             this.player.draw();
             this.spawnEnemies();
@@ -74,7 +70,7 @@ export default class Game {
             const EnemyType = enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
             this.enemies.push(new EnemyType(this));
             this.spawnTimer = 0;
-            this.spawnInterval = Math.max(500, this.spawnInterval - 50); // Gradually increase difficulty
+            this.spawnInterval = Math.max(500, this.spawnInterval - 50);
         }
     }
 
@@ -92,7 +88,7 @@ export default class Game {
         this.bossTimer += 16.67;
         if (this.bossTimer > this.bossInterval) {
             this.enemies.push(new BossEnemy(this));
-            this.audioEngine.play('bossWarning');
+            this.audioEngine.play('boss_warning');
             this.bossTimer = 0;
         }
     }
@@ -108,15 +104,32 @@ export default class Game {
         this.paused = !this.paused;
         document.getElementById('pause-menu').style.display = this.paused ? 'flex' : 'none';
         if (this.paused) {
-            this.backgroundVideo.pause();
-        } else {
-            this.backgroundVideo.play();
+            // Save progress when pausing
+            this.saveProgress();
         }
     }
 
     endGame() {
         this.gameOver = true;
-        this.backgroundVideo.pause();
         document.getElementById('game-over').style.display = 'flex';
+        localStorage.removeItem('gameProgress'); // Clear progress on game over
+    }
+
+    saveProgress() {
+        const progress = {
+            score: this.score,
+            lives: this.player.lives,
+            energy: this.player.energy,
+            position: { x: this.player.x, y: this.player.y }
+        };
+        localStorage.setItem('gameProgress', JSON.stringify(progress));
+    }
+
+    loadProgress(progress) {
+        this.score = progress.score;
+        this.player.lives = progress.lives;
+        this.player.energy = progress.energy;
+        this.player.x = progress.position.x;
+        this.player.y = progress.position.y;
     }
 }
