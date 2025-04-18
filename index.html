@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#000000">
+    <meta name="description" content="我爱打飞机 - A space shooter adventure">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>我爱打飞机</title>
+    <link rel="stylesheet" href="./style.css">
+    <link rel="manifest" href="./manifest.json">
+    <link rel="icon" href="./favicon.ico">
+    <link rel="apple-touch-icon" href="./assets/images/icon-192.png">
+</head>
+<body>
+    <div id="loading-screen">
+        <img src="./assets/images/loading_bg.png" alt="Loading Background" class="loading-bg">
+        <div class="loading-text">加载中...</div>
+        <div id="loading-progress">0%</div>
+    </div>
+    <div class="star-particles"></div>
+    <video class="background-video" autoplay loop muted playsinline>
+        <source src="./assets/videos/menu_starfield.webm" type="video/webm">
+        <source src="./assets/videos/menu_starfield.mp4" type="video/mp4">
+    </video>
+    <div class="menu-container">
+        <div class="menu-buttons">
+            <h1 id="game-title">我爱打飞机</h1>
+            <button id="start-game">开始游戏</button>
+            <button id="continue-game" disabled>继续游戏</button>
+            <button id="leaderboard">排行榜</button>
+            <button id="help">帮助</button>
+            <button id="about">关于</button>
+            <button id="settings">设置</button>
+            <button id="exit">退出</button>
+            <button id="install" style="display: none;">安装游戏</button>
+        </div>
+        <div class="settings-menu" style="display: none;">
+            <h2 id="settings-title">设置</h2>
+            <div class="settings-item">
+                <label for="sound-volume" id="sound-volume-label">音量</label>
+                <input type="range" id="sound-volume" min="0" max="1" step="0.1" value="0.5">
+            </div>
+            <div class="settings-item">
+                <label for="sound-toggle" id="sound-toggle-label">音效</label>
+                <select id="sound-toggle">
+                    <option value="on">开启</option>
+                    <option value="off">关闭</option>
+                </select>
+            </div>
+            <div class="settings-item">
+                <label for="graphics-quality" id="graphics-quality-label">画质</label>
+                <select id="graphics-quality">
+                    <option value="low">低</option>
+                    <option value="medium">中</option>
+                    <option value="high" selected>高</option>
+                </select>
+            </div>
+            <div class="settings-item">
+                <label for="language" id="language-label">语言</label>
+                <select id="language">
+                    <option value="zh">中文</option>
+                    <option value="en">English</option>
+                </select>
+            </div>
+            <div class="settings-item">
+                <label for="key-up" id="key-up-label">上移</label>
+                <input type="text" id="key-up" readonly value="↑">
+            </div>
+            <div class="settings-item">
+                <label for="key-down" id="key-down-label">下移</label>
+                <input type="text" id="key-down" readonly value="↓">
+            </div>
+            <div class="settings-item">
+                <label for="key-left" id="key-left-label">左移</label>
+                <input type="text" id="key-left" readonly value="←">
+            </div>
+            <div class="settings-item">
+                <label for="key-right" id="key-right-label">右移</label>
+                <input type="text" id="key-right" readonly value="→">
+            </div>
+            <div class="settings-item">
+                <label for="key-shoot" id="key-shoot-label">射击</label>
+                <input type="text" id="key-shoot" readonly value="Space">
+            </div>
+            <div class="settings-item">
+                <label for="key-laser" id="key-laser-label">激光</label>
+                <input type="text" id="key-laser" readonly value="Shift">
+            </div>
+            <button id="save-settings">保存</button>
+            <button id="close-settings">关闭</button>
+        </div>
+        <div class="modal" id="leaderboard-modal" style="display: none;">
+            <div class="modal-content">
+                <h2 id="leaderboard">排行榜</h2>
+                <p id="leaderboard-text">暂无排行榜数据</p>
+                <button class="modal-close">关闭</button>
+            </div>
+        </div>
+        <div class="modal" id="help-modal" style="display: none;">
+            <div class="modal-content">
+                <h2 id="help">帮助</h2>
+                <p id="help-text">使用箭头键移动，空格键射击，Shift 键发射激光。</p>
+                <button class="modal-close">关闭</button>
+            </div>
+        </div>
+        <div class="modal" id="about-modal" style="display: none;">
+            <div class="modal-content">
+                <h2 id="about">关于</h2>
+                <p id="about-text">我爱打飞机 - 一款太空射击游戏</p>
+                <button class="modal-close">关闭</button>
+            </div>
+        </div>
+    </div>
+    <canvas id="game-canvas" style="display: none;"></canvas>
+    <div id="hud"></div>
+    <div id="game-over" style="display: none;">
+        <h2 id="game-over-text">游戏结束</h2>
+        <div class="game-over-buttons">
+            <button id="restart-game">重新开始</button>
+            <button id="return-menu">返回菜单</button>
+        </div>
+    </div>
+    <div id="pause-menu" style="display: none;">
+        <h2 id="pause-text">暂停</h2>
+        <div class="pause-menu-buttons">
+            <button id="resume-game">继续</button>
+            <button id="return-menu">返回菜单</button>
+        </div>
+    </div>
+    <div class="virtual-controls" style="display: none;">
+        <div class="virtual-controls-left">
+            <button id="virtual-left">←</button>
+            <button id="virtual-right">→</button>
+            <button id="virtual-up">↑</button>
+            <button id="virtual-down">↓</button>
+        </div>
+        <div class="virtual-controls-right">
+            <button id="virtual-shoot">射击</button>
+            <button id="virtual-laser">激光</button>
+        </div>
+    </div>
+    <script type="module" src="./main.js"></script>
+</body>
+</html>

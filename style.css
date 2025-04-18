@@ -1,0 +1,132 @@
+@font-face {
+    font-family: 'PixelFont';
+    src: url('./assets/fonts/pixel-font.ttf') format('truetype');
+}
+
+body {
+    margin: 0;
+    overflow: hidden;
+    background: black;
+    font-family: 'PixelFont', Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+canvas {
+    display: block;
+}
+
+.menu-container, .settings-menu, .modal, #game-over, #pause-menu, #loading-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    flex-direction: column;
+    z-index: 10;
+}
+
+.menu-buttons, .settings-menu, .modal-content, .game-over-buttons, .pause-menu-buttons {
+    background: rgba(0, 0, 0, 0.9);
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    max-width: 90%;
+    box-sizing: border-box;
+}
+
+button {
+    margin: 10px;
+    padding: 10px 20px;
+    background: #222;
+    color: cyan;
+    border: 2px solid cyan;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'PixelFont', Arial, sans-serif;
+}
+
+button:hover {
+    box-shadow: 0 0 10px cyan;
+    transform: scale(1.05);
+}
+
+button:active {
+    transform: scale(0.95);
+}
+
+.virtual-controls {
+    position: fixed;
+    bottom: 20px;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 20px;
+    box-sizing: border-box;
+    z-index: 20;
+}
+
+.virtual-controls-left, .virtual-controls-right {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.virtual-controls button {
+    width: 60px;
+    height: 60px;
+    font-size: 24px;
+}
+
+.star-particles {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('./assets/images/background.png') repeat;
+    animation: moveStars 100s linear infinite;
+    z-index: -1;
+}
+
+.background-video {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -2;
+}
+
+.loading-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -1;
+}
+
+@keyframes moveStars {
+    from { background-position: 0 0; }
+    to { background-position: -1000px -1000px; }
+}
+
+@media (orientation: portrait) {
+    .virtual-controls {
+        flex-direction: column;
+        align-items: center;
+    }
+    .virtual-controls-right {
+        margin-top: 20px;
+    }
+}
