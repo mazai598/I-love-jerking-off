@@ -16,14 +16,12 @@ function init() {
     updateLanguage(savedLang);
     document.getElementById('language').value = savedLang;
 
-    // Check for saved game progress
     const savedProgress = localStorage.getItem('gameProgress');
     if (savedProgress) {
         document.getElementById('continue-game').disabled = false;
     }
 
     loadAssets().then(assets => {
-        // Preload audio into audioEngine
         Object.keys(assets).forEach(key => {
             if (key.includes('bgm') || key.includes('Warning') || key.includes('Sound')) {
                 audioEngine.loadSound(key, assets[key]);
@@ -34,37 +32,39 @@ function init() {
         loadingScreen.style.display = 'none';
         menuContainer.style.display = 'block';
         resizeCanvas();
+    }).catch(error => {
+        console.error('Failed to load assets:', error);
+        loadingScreen.innerHTML = '加载失败，请刷新页面重试。';
     });
 
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('./sw.js');
     }
 
-    // Handle PWA installation prompt
     let deferredPrompt;
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
-        document.getElementById('install').style.display = 'block';
-    });
-
-    document.getElementById('install').addEventListener('click', () => {
-        if (deferredPrompt) {
+        const installButton = document.getElementById('install');
+        installButton.style.display = 'block';
+        installButton.addEventListener('click', () => {
             deferredPrompt.prompt();
             deferredPrompt.userChoice.then((choiceResult) => {
                 if (choiceResult.outcome === 'accepted') {
                     console.log('User accepted the install prompt');
+                } else {
+                    console.log('User dismissed the install prompt');
                 }
                 deferredPrompt = null;
+                installButton.style.display = 'none';
             });
-        }
+        });
     });
 }
 
 function loadAssets() {
     const assets = {};
     const promises = [
-        // Images (match exact filenames)
         loadImage('./assets/images/background.png').then(img => assets.background = img),
         loadImage('./assets/images/boss_final.png').then(img => assets.boss_final = img),
         loadImage('./assets/images/boss_mid.png').then(img => assets.boss_mid = img),
@@ -93,7 +93,6 @@ function loadAssets() {
         loadImage('./assets/images/powerup_wave.png').then(img => assets.powerup_wave = img),
         loadImage('./assets/images/thruster.png').then(img => assets.thruster = img),
         loadImage('./assets/images/weapon_normal.png').then(img => assets.weapon_normal = img),
-        // Sounds
         loadAudio('./assets/sounds/bgm.mp3').then(audio => assets.bgm = audio),
         loadAudio('./assets/sounds/boss_warning.mp3').then(audio => assets.boss_warning = audio),
         loadAudio('./assets/sounds/click.mp3').then(audio => assets.click = audio),
@@ -113,7 +112,7 @@ function loadImage(src) {
         const img = new Image();
         img.src = src;
         img.onload = () => resolve(img);
-        img.onerror = reject;
+        img.onerror = () => reject(new Error(`Failed to load image: ${src}`));
     });
 }
 
@@ -121,7 +120,7 @@ function loadAudio(src) {
     return new Promise((resolve, reject) => {
         const audio = new Audio(src);
         audio.oncanplaythrough = () => resolve(audio);
-        audio.onerror = reject;
+        audio.onerror = () => reject(new Error(`Failed to load audio: ${src}`));
     });
 }
 
@@ -161,7 +160,7 @@ function setupEventListeners() {
         audioEngine.play('click');
     });
     document.getElementById('exit').addEventListener('click', () => {
-        window.close(); // Attempt to close the window
+        window.close();
         audioEngine.play('click');
     });
     document.querySelectorAll('.modal-close').forEach(btn => {

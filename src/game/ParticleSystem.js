@@ -2,30 +2,37 @@ export default class ParticleSystem {
     constructor(game) {
         this.game = game;
         this.particles = [];
-        this.trailImage = game.assets.particleTrail;
-        this.glowImage = game.assets.glow;
     }
 
-    addParticle(x, y, vx, vy, type = 'trail') {
-        this.particles.push({ x, y, vx, vy, life: 100, type });
+    addParticle(x, y, dx, dy, type) {
+        this.particles.push({ x, y, dx, dy, type, life: 1 });
     }
 
     update() {
         this.particles = this.particles.filter(p => p.life > 0);
         this.particles.forEach(p => {
-            p.x += p.vx;
-            p.y += p.vy;
-            p.life -= 1;
+            p.x += p.dx;
+            p.y += p.dy;
+            p.life -= 0.02;
         });
     }
 
     draw() {
         const ctx = this.game.ctx;
         this.particles.forEach(p => {
-            if (p.type === 'trail') {
-                ctx.drawImage(this.trailImage, p.x, p.y, 5, 5);
-            } else if (p.type === 'glow') {
-                ctx.drawImage(this.glowImage, p.x - 5, p.y - 5, 10, 10);
+            const image = this.game.assets[p.type === 'glow' ? 'glow' : 'particle_trail'];
+            if (image && image.complete) { // Ensure image is loaded
+                ctx.globalAlpha = p.life;
+                ctx.drawImage(
+                    image,
+                    p.x - 5,
+                    p.y - 5,
+                    10,
+                    10
+                );
+                ctx.globalAlpha = 1;
+            } else {
+                console.warn(`Particle image for type ${p.type} not loaded`);
             }
         });
     }

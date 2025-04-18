@@ -9,6 +9,7 @@ export default class Powerup {
         this.speed = 1;
         this.markedForDeletion = false;
         this.image = game.assets[`powerup_${this.type}`];
+        if (!this.image) console.warn(`Powerup image for type ${this.type} not loaded`);
     }
 
     update() {
@@ -21,7 +22,9 @@ export default class Powerup {
     }
 
     draw() {
-        this.game.ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
+        if (this.image && this.image.complete) {
+            this.game.ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
+        }
     }
 
     collidesWith(player) {
@@ -34,6 +37,7 @@ export default class Powerup {
     }
 
     applyEffect() {
+        console.log(`Applying powerup effect: ${this.type}`);
         this.game.audioEngine.play('powerup');
         for (let i = 0; i < 5; i++) {
             this.game.particleSystem.addParticle(
@@ -54,7 +58,7 @@ export default class Powerup {
                 break;
             case 'laser':
                 this.game.weaponSystem.setWeapon('laser');
-                this.game.player.addEnergy(10); // Bonus energy for laser
+                this.game.player.addEnergy(10);
                 break;
             case 'penta':
                 this.game.weaponSystem.setWeapon('penta');
@@ -62,6 +66,8 @@ export default class Powerup {
             case 'wave':
                 this.game.weaponSystem.setWeapon('wave');
                 break;
+            default:
+                console.warn(`Unknown powerup type: ${this.type}`);
         }
     }
 }
