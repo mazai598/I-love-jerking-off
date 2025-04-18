@@ -7,6 +7,7 @@ export default class AudioEngine {
 
     loadSound(id, audio) {
         this.sounds[id] = audio;
+        audio.volume = this.volume; // Set initial volume
     }
 
     play(id, loop = false) {
@@ -16,7 +17,11 @@ export default class AudioEngine {
                 sound.volume = this.volume;
                 sound.loop = loop;
                 sound.currentTime = 0;
-                sound.play();
+                sound.play().catch(error => {
+                    console.error(`Error playing sound ${id}:`, error);
+                });
+            } else {
+                console.warn(`Sound ${id} not loaded`);
             }
         }
     }

@@ -8,7 +8,7 @@ export default class Powerup {
         this.y = -this.height;
         this.speed = 1;
         this.markedForDeletion = false;
-        this.image = game.assets[`powerup${type.charAt(0).toUpperCase() + type.slice(1)}`];
+        this.image = game.assets[`powerup${this.type.charAt(0).toUpperCase() + this.type.slice(1)}`];
     }
 
     update() {
@@ -34,7 +34,20 @@ export default class Powerup {
     }
 
     applyEffect() {
+        // Ensure sound plays when power-up is collected
         this.game.audioEngine.play('powerup');
+        
+        // Add particle effect for visual feedback
+        for (let i = 0; i < 5; i++) {
+            this.game.particleSystem.addParticle(
+                this.x + this.width / 2,
+                this.y + this.height / 2,
+                (Math.random() - 0.5) * 3,
+                (Math.random() - 0.5) * 3,
+                'glow'
+            );
+        }
+
         switch (this.type) {
             case 'life':
                 this.game.player.lives++;

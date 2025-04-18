@@ -16,6 +16,12 @@ function init() {
     updateLanguage(savedLang);
     document.getElementById('language').value = savedLang;
     loadAssets().then(assets => {
+        // Preload audio into audioEngine
+        Object.keys(assets).forEach(key => {
+            if (key.includes('bgm') || key.includes('Warning') || key.includes('Sound')) {
+                audioEngine.loadSound(key, assets[key]);
+            }
+        });
         game = new Game(canvas, assets, audioEngine);
         setupEventListeners();
         loadingScreen.style.display = 'none';

@@ -30,16 +30,26 @@ export default class Game {
         this.powerupInterval = 5000;
         this.bossTimer = 0;
         this.bossInterval = 30000;
+
+        // Initialize dynamic background video
+        this.backgroundVideo = document.createElement('video');
+        this.backgroundVideo.src = './assets/videos/menu_starfield.mp4';
+        this.backgroundVideo.muted = true;
+        this.backgroundVideo.loop = true;
+        this.backgroundVideo.autoplay = true;
+        this.backgroundVideo.playsInline = true;
     }
 
     start() {
+        this.backgroundVideo.play();
         this.animate();
     }
 
     animate() {
         if (!this.paused && !this.gameOver) {
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            this.ctx.drawImage(this.assets.background, 0, 0, this.canvas.width, this.canvas.height);
+            // Draw dynamic video background
+            this.ctx.drawImage(this.backgroundVideo, 0, 0, this.canvas.width, this.canvas.height);
             this.player.update();
             this.player.draw();
             this.spawnEnemies();
@@ -64,6 +74,7 @@ export default class Game {
             const EnemyType = enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
             this.enemies.push(new EnemyType(this));
             this.spawnTimer = 0;
+            this.spawnInterval = Math.max(500, this.spawnInterval - 50); // Gradually increase difficulty
         }
     }
 
@@ -96,10 +107,16 @@ export default class Game {
     togglePause() {
         this.paused = !this.paused;
         document.getElementById('pause-menu').style.display = this.paused ? 'flex' : 'none';
+        if (this.paused) {
+            this.backgroundVideo.pause();
+        } else {
+            this.backgroundVideo.play();
+        }
     }
 
     endGame() {
         this.gameOver = true;
+        this.backgroundVideo.pause();
         document.getElementById('game-over').style.display = 'flex';
     }
 }
